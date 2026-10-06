@@ -1,0 +1,56 @@
+services:
+  db:
+    image: ${IMAGE_REGISTRY:-docker.io/library}/postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: interview
+      POSTGRES_USER: interview
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?请在 .env 中设置 POSTGRES_PASSWORD}
+    volumes:
+      - interview_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U interview -d interview"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  backend:
+    build:
+      context: ./backend
+      args:
+        PYTHON_BASE_IMAGE: ${IMAGE_REGISTRY:-docker.io/library}/python:3.12-slim
+    restart: unless-stopped
+    environment:
+      PGHOST: db
+      PGUSER: interview
+      PGPASSWORD: ${POSTGRES_PASSWORD:?请在 .env 中设置 POSTGRES_PASSWORD}
+      PGDATABASE: interview
+      MODEL_BASE_URL: ${MODEL_BASE_URL:-https://api.openai.com/v1}
+      MODEL_API_KEY: ${MODEL_API_KEY:-}
+      MODEL_NAME: ${MODEL_NAME:-gpt-4o-mini}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      DEMO_PASSWORD_1: ${DEMO_PASSWORD_1:-InterviewDemo123!}
+      DEMO_PASSWORD_2: ${DEMO_PASSWORD_2:-InterviewDemo456!}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=3)"]
+      interval: 5s
+      timeout: 4s
+      retries: 20
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NGINX_BASE_IMAGE: ${IMAGE_REGISTRY:-docker.io/library}/nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8080}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  interview_db:

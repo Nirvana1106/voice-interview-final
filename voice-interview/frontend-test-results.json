@@ -1,0 +1,21 @@
+{
+  "kind": "frontend-logic-test-doubles",
+  "executedIn": "Codex JavaScript execution environment",
+  "passed": 25,
+  "failed": 0,
+  "scope": [
+    "SSE parsing, Unicode deltas and fragmented CRLF boundaries",
+    "terminal stream events release answer controls without waiting for EOF",
+    "incremental speech segmentation and stop semantics",
+    "microphone final result and permission fallback",
+    "stale callbacks and navigation cancellation",
+    "account logout and late request cleanup",
+    "first-character timing, page visibility and stale callback invalidation",
+    "duplicate create and answer protection",
+    "truncated streams and completed interview controls"
+  ],
+  "limitations": [
+    "Uses DOM, network, speech and clock test doubles.",
+    "Does not prove Docker, PostgreSQL, real model, microphone or browser performance behavior."
+  ]
+}

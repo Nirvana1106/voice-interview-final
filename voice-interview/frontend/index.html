@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f6f2">
+  <title>面试练习室 · 语音模拟面试</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="面试练习室首页">
+        <span class="brand-mark" aria-hidden="true">声</span>
+        <span><strong>面试练习室</strong><small>把表达练成底气</small></span>
+      </a>
+      <div class="topbar-right">
+        <span id="userLabel" class="user-label" hidden></span>
+        <button id="logoutButton" class="text-button" type="button" hidden>退出登录</button>
+      </div>
+    </header>
+
+    <main>
+      <section id="loginView" class="login-layout" hidden>
+        <div class="login-intro">
+          <span class="eyebrow">VOICE INTERVIEW STUDIO</span>
+          <h1>把每一次开口，<br><em>练成更好的回答。</em></h1>
+          <p>围绕目标岗位进行三轮真实模拟面试。听题、作答、确认，再带着具体细节进入追问。</p>
+          <div class="feature-pills"><span>三轮循序渐进</span><span>语音练习</span><span>进度可恢复</span></div>
+        </div>
+        <form id="loginForm" class="card login-card">
+          <span class="eyebrow">欢迎回来</span>
+          <h2>登录练习室</h2>
+          <p class="muted">使用 README 中提供的预置测试账号。</p>
+          <label for="username">账号</label>
+          <input id="username" name="username" autocomplete="username" required maxlength="100" placeholder="输入测试账号">
+          <label for="password">密码</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required maxlength="200" placeholder="输入密码">
+          <button id="loginButton" class="primary-button wide" type="submit">登录</button>
+          <p id="loginMessage" class="form-message" role="alert"></p>
+        </form>
+      </section>
+
+      <section id="workspaceView" hidden>
+        <div class="workspace-hero">
+          <div><span class="eyebrow">PRACTICE WITH PURPOSE</span><h1>下一次回答，<em>更有把握。</em></h1>
+            <p>从岗位和经历出发，完成一场真实的三轮口头练习。</p></div>
+          <div class="hero-ornament" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+        </div>
+        <nav class="tabs" aria-label="主导航">
+          <button type="button" class="tab active" data-tab="practice">开始练习</button>
+          <button type="button" class="tab" data-tab="history">历史记录</button>
+          <button type="button" class="tab" data-tab="performance">性能记录</button>
+        </nav>
+
+        <section id="practicePanel" class="panel">
+          <form id="createForm" class="card setup-card">
+            <div class="card-heading"><div><span class="eyebrow">01 / 准备</span><h2>设定这场面试</h2></div>
+              <span class="step-note">每次开始都会创建一场新面试</span></div>
+            <div class="sample-row"><label for="sampleSelect">验收用虚构资料</label>
+              <select id="sampleSelect"><option value="">手动填写</option></select>
+              <button id="fillSampleButton" class="secondary-button" type="button">填入样例</button></div>
+            <label for="role">目标岗位 <span class="required">*</span></label>
+            <input id="role" name="role" required minlength="2" maxlength="100" placeholder="例如：后端开发工程师">
+            <label for="jobDescription">岗位描述 <span class="required">*</span></label>
+            <textarea id="jobDescription" name="jobDescription" required minlength="30" maxlength="10000" rows="5" placeholder="写下岗位职责、技术要求和团队背景"></textarea>
+            <label for="experienceSummary">个人经历摘要 <span class="required">*</span></label>
+            <textarea id="experienceSummary" name="experienceSummary" required minlength="30" maxlength="10000" rows="5" placeholder="写下真实或用于验收的虚构项目经历"></textarea>
+            <div class="form-footer"><p>岗位描述与经历合计 500–1,500 字更适合性能验收。</p>
+              <button id="startButton" class="primary-button" type="submit">开始三轮面试 <span aria-hidden="true">↗</span></button></div>
+            <p id="createMessage" class="form-message" role="alert"></p>
+          </form>
+
+          <section id="interviewPanel" class="card interview-card" hidden aria-labelledby="interviewTitle">
+            <div class="interview-topline"><button id="backToSetup" class="text-button" type="button">← 新建面试</button>
+              <span id="interviewState" class="state-badge"></span></div>
+            <div class="interview-heading"><div><span class="eyebrow">LIVE PRACTICE</span><h2 id="interviewTitle">模拟面试</h2></div>
+              <div id="progressLabel" class="progress-label"></div></div>
+            <div id="progressDots" class="progress-dots" aria-label="面试进度"></div>
+            <div id="questionArea">
+              <div class="question-box"><span class="eyebrow">面试官提问</span>
+                <p id="questionText" aria-live="polite"></p></div>
+              <div class="audio-controls">
+                <button id="replayButton" class="secondary-button" type="button" disabled>▶ 重播问题</button>
+                <button id="stopSpeechButton" class="text-button" type="button">■ 停止播报</button>
+                <span id="speechStatus" class="muted small" role="status"></span>
+              </div>
+              <div class="answer-section"><div class="answer-head"><span class="eyebrow">你的回答</span>
+                  <span class="muted small">转写可修改；确认后才进入下一轮</span></div>
+                <div class="record-controls"><button id="recordButton" class="record-button" type="button">● 开始麦克风作答</button>
+                  <button id="stopRecordButton" class="secondary-button" type="button" hidden>停止录音</button>
+                  <span id="recordStatus" class="muted small" role="status"></span></div>
+                <label class="sr-only" for="answerInput">确认后的回答文字</label>
+                <textarea id="answerInput" rows="5" maxlength="10000" placeholder="麦克风转写会显示在这里；你也可以直接输入或修改。"></textarea>
+                <div class="answer-actions"><button id="retryButton" class="secondary-button" type="button" hidden>重试生成问题</button>
+                  <button id="confirmButton" class="primary-button" type="button" disabled>确认回答并继续</button></div>
+              </div>
+            </div>
+            <div id="completeArea" class="complete-area" hidden><span class="complete-icon">✓</span>
+              <h3>三轮面试已完成</h3><p>回答已经保存。可以在历史记录中回看完整问答。</p>
+              <button id="viewHistoryButton" class="primary-button" type="button">查看历史问答</button></div>
+            <p id="interviewMessage" class="form-message" role="status"></p>
+          </section>
+        </section>
+
+        <section id="historyPanel" class="panel" hidden>
+          <div class="section-heading"><div><span class="eyebrow">02 / 回看</span><h2>历史面试</h2></div>
+            <button id="refreshHistoryButton" class="secondary-button" type="button">刷新</button></div>
+          <div id="historyList" class="history-list"></div>
+          <div id="historyDetail" class="card history-detail" hidden></div>
+          <p id="historyMessage" class="form-message" role="status"></p>
+        </section>
+
+        <section id="performancePanel" class="panel" hidden>
+          <div class="section-heading"><div><span class="eyebrow">03 / 实测</span><h2>响应性能记录</h2></div>
+            <div class="button-row"><button id="refreshMetricsButton" class="secondary-button" type="button">刷新统计</button>
+              <a class="secondary-button" href="/api/performance/export.csv" download>导出逐次 CSV</a></div></div>
+          <p class="section-intro">仅统计真实模型请求。浏览器记录首字实际呈现和语音播报开始；未收集到的指标不会算作达标。</p>
+          <div id="metricsSummary" class="metrics-grid"></div>
+          <div class="card metrics-note"><h3>验收门槛</h3>
+            <p>至少 20 次真实提问，包含首题和追问；成功率 ≥ 95%；模型 TTFT P50 ≤ 2 秒、P95 ≤ 5 秒；页面首字 P95 ≤ 6 秒；首段语音 P95 ≤ 8 秒。</p>
+            <p>首个请求单独保留为冷启动。请同时留存录屏，以核对页面首字和有效语音开始时刻。</p></div>
+          <p id="metricsMessage" class="form-message" role="status"></p>
+        </section>
+      </section>
+    </main>
+    <footer>面试练习室 · 数据仅供本次练习与验收使用</footer>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>

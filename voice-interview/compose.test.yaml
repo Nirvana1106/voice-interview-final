@@ -1,0 +1,39 @@
+# Isolated database; never targets the normal database or real model.
+name: voice-interview-tests
+services:
+  db-test:
+    image: ${IMAGE_REGISTRY:-docker.io/library}/postgres:16-alpine
+    environment:
+      POSTGRES_DB: interview_test
+      POSTGRES_USER: interview
+      POSTGRES_PASSWORD: test-only-password
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U interview -d interview_test"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  test:
+    build:
+      context: ./backend
+      args:
+        PYTHON_BASE_IMAGE: ${IMAGE_REGISTRY:-docker.io/library}/python:3.12-slim
+    environment:
+      RUN_DB_TESTS: "1"
+      PGHOST: db-test
+      PGUSER: interview
+      PGPASSWORD: test-only-password
+      PGDATABASE: interview_test
+      MODEL_API_KEY: ""
+    depends_on:
+      db-test:
+        condition: service_healthy
+    command: ["python", "-m", "unittest", "discover", "-s", "tests", "-v"]
+  frontend-test:
+    image: ${IMAGE_REGISTRY:-docker.io/library}/node:22-alpine
+    working_dir: /project
+    volumes:
+      - ./frontend:/project/frontend:ro
+      - ./tests:/project/tests:ro
+    command: ["node", "tests/frontend.cjs"]
