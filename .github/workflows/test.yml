@@ -1,0 +1,46 @@
+name: Automated checks
+on:
+  push:
+  pull_request:
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node tests/frontend.cjs
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: interview_test
+          POSTGRES_USER: interview
+          POSTGRES_PASSWORD: test-only-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U interview -d interview_test"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      RUN_DB_TESTS: "1"
+      PGHOST: localhost
+      PGUSER: interview
+      PGPASSWORD: test-only-password
+      PGDATABASE: interview_test
+      MODEL_API_KEY: ""
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+           python-version: "3.12"
+      - run: pip install -r backend/requirements.txt
+      - run: python -m compileall -q app tests
+        working-directory: backend
+      - run: python -m unittest discover -s tests -v
+        working-directory: backend
+      - run: docker compose -f compose.test.yaml config --quiet
+      - run: docker compose -f compose.test.yaml build test
